@@ -1,6 +1,8 @@
 import type {
   MealDbSearchResponse,
   MealDbFilterResponse,
+  MealDbIngredientListResponse,
+  MealDbIngredientListItem,
   MealDbLookupResponse,
   MealDbSummary,
 } from "./mealDbTypes";
@@ -12,6 +14,8 @@ const API_KEY = (import.meta.env.VITE_MEALDB_API_KEY as string | undefined) ?? "
 const BASE_URL = `https://www.themealdb.com/api/json/v1/${API_KEY}`;
 const MAX_INGREDIENTS = 5;
 const MAX_LOOKUPS = 12;
+/** Max number of TheMealDB ingredient names to search per user ingredient. */
+const MAX_WILDCARD_MATCHES = 3;
 
 const cache = new Map<string, unknown>();
 
@@ -31,6 +35,150 @@ async function fetchJson<T>(url: string, signal?: AbortSignal): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+// ─── Ingredient-list wildcard lookup ─────────────────────────────────────────
+
+/**
+ * Singleton promise so concurrent calls share one in-flight request.
+ * Returns full ingredient items (name + type) from TheMealDB.
+ * Exported for the Ingredient Glossary page.
+ */
+let _ingredientItemsPromise: Promise<MealDbIngredientListItem[]> | null = null;
+
+export async function getMealDbIngredientItems(): Promise<MealDbIngredientListItem[]> {
+  if (!_ingredientItemsPromise) {
+    _ingredientItemsPromise = (async () => {
+      const cacheKey = "mealdb:ingredientitems";
+      const cached = getCached<MealDbIngredientListItem[]>(cacheKey);
+      if (cached) return cached;
+
+      try {
+        const url = `${BASE_URL}/list.php?i=list`;
+        const data = await fetchJson<MealDbIngredientListResponse>(url);
+        const items = data.meals ?? [];
+        setCached(cacheKey, items);
+        return items;
+      } catch {
+        return [];
+      }
+    })();
+  }
+  return _ingredientItemsPromise;
+}
+
+/**
+ * Returns just the ingredient name strings (derived from the full items cache).
+ * Exported so UI hooks can pre-warm the cache on mount.
+ */
+let _ingredientListPromise: Promise<string[]> | null = null;
+
+export async function getMealDbIngredientList(): Promise<string[]> {
+  if (!_ingredientListPromise) {
+    _ingredientListPromise = getMealDbIngredientItems().then((items) =>
+      items.map((i) => i.strIngredient),
+    );
+  }
+  return _ingredientListPromise;
+}
+
+/**
+ * Given a user query (already alias-normalized), return the TheMealDB ingredient
+ * names that best match it, ranked by specificity.
+ *
+ * Scoring (lower = better):
+ *   0 – exact match (case-insensitive)
+ *   1 – simple plural/singular  (e.g. "potato" ↔ "Potatoes")
+ *   2 – TheMealDB name ends with the query as a word  ("Charlotte Potatoes")
+ *   3 – TheMealDB name starts with the query as a word ("Chicken Breast")
+ *
+ * Results are capped at MAX_WILDCARD_MATCHES to limit parallel API calls.
+ */
+function findMatchingMealDbIngredients(
+  query: string,
+  allIngredients: string[]
+): string[] {
+  const q = query.toLowerCase();
+
+  type Scored = { ing: string; score: number };
+  const scored: Scored[] = [];
+
+  for (const ing of allIngredients) {
+    const il = ing.toLowerCase();
+
+    if (il === q) {
+      scored.push({ ing, score: 0 });
+    } else if (il === q + "s" || il === q + "es" || q === il + "s" || q === il + "es") {
+      // Simple plural/singular pairs: potato↔potatoes, mushroom↔mushrooms
+      scored.push({ ing, score: 1 });
+    } else if (il.endsWith(" " + q) || il.endsWith(" " + q + "s") || il.endsWith(" " + q + "es")) {
+      // Name ends with the query as a whole word: "Charlotte Potatoes"
+      scored.push({ ing, score: 2 });
+    } else if (il.startsWith(q + " ")) {
+      // Name starts with the query: "Chicken Breast", "Mushroom Sauce"
+      scored.push({ ing, score: 3 });
+    }
+  }
+
+  return scored
+    .sort((a, b) => a.score - b.score)
+    .slice(0, MAX_WILDCARD_MATCHES)
+    .map((s) => s.ing);
+}
+
+// ─── Low-level filter call (exact TheMealDB ingredient name) ─────────────────
+
+async function filterByExactMealDbIngredient(
+  mealDbName: string,
+  signal?: AbortSignal
+): Promise<MealDbSummary[]> {
+  const cacheKey = `mealdb:ingredient:${mealDbName.toLowerCase()}`;
+  const cached = getCached<MealDbSummary[]>(cacheKey);
+  if (cached) return cached;
+
+  const url = `${BASE_URL}/filter.php?i=${encodeURIComponent(mealDbName)}`;
+  const data = await fetchJson<MealDbFilterResponse>(url, signal);
+
+  const results = data.meals ?? [];
+  setCached(cacheKey, results);
+  return results;
+}
+
+// ─── Public filter: resolves user input → matching TheMealDB names → meals ───
+
+async function filterMealsByIngredient(
+  ingredient: string,
+  signal?: AbortSignal
+): Promise<MealDbSummary[]> {
+  const normalized = normalizeIngredient(ingredient);
+
+  // Try to resolve via the wildcard ingredient list.
+  const allIngredients = await getMealDbIngredientList();
+  const matchingNames =
+    allIngredients.length > 0
+      ? findMatchingMealDbIngredients(normalized, allIngredients)
+      : [normalized]; // fallback: use normalized name directly
+
+  if (matchingNames.length === 0) return [];
+
+  const settled = await Promise.allSettled(
+    matchingNames.map((name) => filterByExactMealDbIngredient(name, signal))
+  );
+
+  // Merge results, deduplicating by meal ID.
+  const seen = new Set<string>();
+  const merged: MealDbSummary[] = [];
+  for (const result of settled) {
+    if (result.status === "fulfilled") {
+      for (const meal of result.value) {
+        if (!seen.has(meal.idMeal)) {
+          seen.add(meal.idMeal);
+          merged.push(meal);
+        }
+      }
+    }
+  }
+  return merged;
+}
+
 export async function searchMealsByName(
   query: string,
   signal?: AbortSignal
@@ -48,23 +196,6 @@ export async function searchMealsByName(
   if (!data.meals) return [];
 
   const results = data.meals.map(mapMealToExternalRecipe);
-  setCached(cacheKey, results);
-  return results;
-}
-
-async function filterMealsByIngredient(
-  ingredient: string,
-  signal?: AbortSignal
-): Promise<MealDbSummary[]> {
-  const normalized = normalizeIngredient(ingredient);
-  const cacheKey = `mealdb:ingredient:${normalized}`;
-  const cached = getCached<MealDbSummary[]>(cacheKey);
-  if (cached) return cached;
-
-  const url = `${BASE_URL}/filter.php?i=${encodeURIComponent(normalized)}`;
-  const data = await fetchJson<MealDbFilterResponse>(url, signal);
-
-  const results = data.meals ?? [];
   setCached(cacheKey, results);
   return results;
 }

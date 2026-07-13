@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { Search, RefreshCw } from "lucide-react";
 import PageContainer from "../components/layout/PageContainer";
 import IngredientInput from "../components/ingredients/IngredientInput";
@@ -26,10 +27,25 @@ const EXTERNAL_LABEL_ORDER = [
 type ButtonState = "disabled" | "ready" | "dirty" | "searching";
 
 export default function IngredientSearchPage() {
+  const location = useLocation();
   const [selectedIngredients, setSelectedIngredients] = useState<string[]>([]);
   const [submittedIngredients, setSubmittedIngredients] = useState<string[]>(
     [],
   );
+
+  // Pre-fill an ingredient when navigating here from the Ingredient Glossary.
+  const prefillIngredient = (
+    location.state as { add?: string } | null
+  )?.add;
+  useEffect(() => {
+    if (!prefillIngredient) return;
+    setSelectedIngredients((prev) =>
+      prev.map((i) => i.toLowerCase()).includes(prefillIngredient.toLowerCase())
+        ? prev
+        : [...prev, prefillIngredient],
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [includeExternal, setIncludeExternal] = useState(true);
   const [externalWasSearched, setExternalWasSearched] = useState(false);
 

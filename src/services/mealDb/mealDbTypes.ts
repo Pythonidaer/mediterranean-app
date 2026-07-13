@@ -71,3 +71,14 @@ export type MealDbFilterResponse = {
 export type MealDbLookupResponse = {
   meals: MealDbMeal[] | null;
 };
+
+export type MealDbIngredientListItem = {
+  idIngredient: string;
+  strIngredient: string;
+  strType: string | null;
+  strDescription: string | null;
+};
+
+export type MealDbIngredientListResponse = {
+  meals: MealDbIngredientListItem[] | null;
+};

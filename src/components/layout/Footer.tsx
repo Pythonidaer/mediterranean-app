@@ -26,6 +26,7 @@ export default function Footer() {
               {[
                 { to: "/recipes", label: "All Recipes" },
                 { to: "/what-can-i-make", label: "What Can I Make?" },
+                { to: "/ingredient-guide", label: "Ingredient Guide" },
               ].map((l) => (
                 <li key={l.to}>
                   <Link

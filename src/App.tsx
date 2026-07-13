@@ -8,6 +8,7 @@ import RecipeDetailPage from "./pages/RecipeDetailPage";
 import IngredientSearchPage from "./pages/IngredientSearchPage";
 import MealPrepPage from "./pages/MealPrepPage";
 import ExternalRecipeDetailPage from "./pages/ExternalRecipeDetailPage";
+import IngredientsGlossaryPage from "./pages/IngredientsGlossaryPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
 export default function App() {
@@ -27,6 +28,7 @@ export default function App() {
               path="/external-recipes/themealdb/:id"
               element={<ExternalRecipeDetailPage />}
             />
+            <Route path="/ingredient-guide" element={<IngredientsGlossaryPage />} />
             <Route path="/not-found" element={<NotFoundPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
