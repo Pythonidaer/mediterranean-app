@@ -1,10 +1,10 @@
 import { Link } from "react-router-dom";
 import { Clock, Refrigerator, Users } from "lucide-react";
-import type { Recipe } from "../../types/recipe";
+import type { CuratedRecipe } from "../../types/recipe";
 import { totalTime } from "../../utils/time";
 
 interface RecipeCardProps {
-  recipe: Recipe;
+  recipe: CuratedRecipe;
 }
 
 const CATEGORY_COLORS: Record<string, string> = {

@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 
-const STORAGE_KEY = "fresco_favorites";
+const STORAGE_KEY = "greenbean_favorites";
 
 function readFromStorage(): string[] {
   try {

@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Clock, Refrigerator, Users, ArrowRight } from "lucide-react";
 import PageContainer from "../components/layout/PageContainer";
-import { recipes } from "../data/recipes";
+import { curatedRecipes } from "../data/curatedRecipes";
 import { useFavorites } from "../hooks/useFavorites";
 import FavoriteButton from "../components/recipes/FavoriteButton";
 import { formatMinutes } from "../utils/time";
@@ -18,7 +18,7 @@ export default function MealPrepPage() {
   const { isFavorite, toggle } = useFavorites();
   const planRecipes = WEEK_PLAN.map((p) => ({
     day: p.day,
-    recipe: recipes.find((r) => r.id === p.recipeId)!,
+    recipe: curatedRecipes.find((r) => r.id === p.recipeId)!,
   }));
 
   const totalPrepMinutes = planRecipes.reduce(

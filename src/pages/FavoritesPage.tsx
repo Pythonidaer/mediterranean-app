@@ -3,11 +3,11 @@ import { Heart } from "lucide-react";
 import PageContainer from "../components/layout/PageContainer";
 import RecipeGrid from "../components/recipes/RecipeGrid";
 import { useFavorites } from "../hooks/useFavorites";
-import { recipes } from "../data/recipes";
+import { curatedRecipes } from "../data/curatedRecipes";
 
 export default function FavoritesPage() {
   const { favorites } = useFavorites();
-  const favoriteRecipes = recipes.filter((r) => favorites.includes(r.id));
+  const favoriteRecipes = curatedRecipes.filter((r) => favorites.includes(r.id));
 
   return (
     <PageContainer>

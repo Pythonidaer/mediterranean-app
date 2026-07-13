@@ -7,7 +7,7 @@ import {
   ChefHat,
   AlertCircle,
 } from "lucide-react";
-import { recipes } from "../data/recipes";
+import { curatedRecipes } from "../data/curatedRecipes";
 import { formatMinutes, totalTime } from "../utils/time";
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -21,7 +21,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 export default function RecipeDetailPage() {
   const { slug } = useParams<{ slug: string }>();
-  const recipe = recipes.find((r) => r.slug === slug);
+  const recipe = curatedRecipes.find((r) => r.slug === slug);
 
   if (!recipe) return <Navigate to="/not-found" replace />;
 

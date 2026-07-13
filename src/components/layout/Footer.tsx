@@ -12,7 +12,7 @@ export default function Footer() {
               <span className="flex items-center justify-center w-7 h-7 rounded-full bg-primary text-primary-foreground">
                 <Leaf size={14} />
               </span>
-              Fresco
+              GreenBean
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Calm, healthy Mediterranean meal prep. Plan once, eat well all week.
@@ -58,8 +58,8 @@ export default function Footer() {
         </div>
 
         <div className="mt-10 pt-6 border-t border-border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs text-muted-foreground">
-          <span>© 2026 Fresco. Made for slow Sundays.</span>
-          <span>Fresh · Healthy · Made ahead</span>
+          <span>© 2026 GreenBean.</span>
+          <span>Fresh · Healthy · Enjoy 😊</span>
         </div>
 
       </div>

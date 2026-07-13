@@ -3,7 +3,7 @@ import { NavLink } from "react-router-dom";
 import { Menu, X, Leaf } from "lucide-react";
 
 const NAV_LINKS = [
-  { to: "/recipes", label: "Recipes" },
+  { to: "/recipes", label: "Curated Recipes" },
   { to: "/what-can-i-make", label: "What Can I Make?" },
 ];
 
@@ -22,7 +22,7 @@ export default function Header() {
           <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground">
             <Leaf size={16} />
           </span>
-          Fresco
+          GreenBean
         </NavLink>
 
         {/* Desktop nav */}

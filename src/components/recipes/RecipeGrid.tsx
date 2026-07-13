@@ -1,8 +1,8 @@
-import type { Recipe } from "../../types/recipe";
+import type { CuratedRecipe } from "../../types/recipe";
 import RecipeCard from "./RecipeCard";
 
 interface RecipeGridProps {
-  recipes: Recipe[];
+  recipes: CuratedRecipe[];
   emptyMessage?: string;
 }
 

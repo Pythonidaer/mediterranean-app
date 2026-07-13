@@ -1,13 +1,16 @@
-import { useState, type KeyboardEvent } from "react";
+import { type ReactNode, useState, type KeyboardEvent } from "react";
 import { Plus, Search } from "lucide-react";
 import IngredientTag from "./IngredientTag";
-import { POPULAR_INGREDIENTS } from "../../data/recipes";
+import { POPULAR_INGREDIENTS } from "../../data/curatedRecipes";
 
 interface IngredientInputProps {
   ingredients: string[];
   onAdd: (ingredient: string) => void;
   onRemove: (ingredient: string) => void;
   onClear: () => void;
+  onSubmit?: () => void;
+  /** Rendered between the text-input row and the ingredient chips. */
+  actionSlot?: ReactNode;
 }
 
 export default function IngredientInput({
@@ -15,12 +18,17 @@ export default function IngredientInput({
   onAdd,
   onRemove,
   onClear,
+  onSubmit,
+  actionSlot,
 }: IngredientInputProps) {
   const [value, setValue] = useState("");
 
   function handleAdd() {
     const trimmed = value.trim();
-    if (trimmed && !ingredients.map((i) => i.toLowerCase()).includes(trimmed.toLowerCase())) {
+    if (
+      trimmed &&
+      !ingredients.map((i) => i.toLowerCase()).includes(trimmed.toLowerCase())
+    ) {
       onAdd(trimmed);
       setValue("");
     }
@@ -29,7 +37,11 @@ export default function IngredientInput({
   function handleKeyDown(e: KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Enter") {
       e.preventDefault();
-      handleAdd();
+      if (value.trim()) {
+        handleAdd();
+      } else if (ingredients.length > 0) {
+        onSubmit?.();
+      }
     }
     if (e.key === "Backspace" && !value && ingredients.length > 0) {
       onRemove(ingredients[ingredients.length - 1]);
@@ -37,16 +49,17 @@ export default function IngredientInput({
   }
 
   const suggestions = POPULAR_INGREDIENTS.filter(
-    (p) => !ingredients.map((i) => i.toLowerCase()).includes(p.toLowerCase())
+    (p) => !ingredients.map((i) => i.toLowerCase()).includes(p.toLowerCase()),
   );
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Input row */}
+      {/* Text input + plus button */}
       <div className="flex gap-2">
         <div className="relative flex-1">
           <Search
             size={16}
+            aria-hidden="true"
             className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
           />
           <input
@@ -56,20 +69,23 @@ export default function IngredientInput({
             onKeyDown={handleKeyDown}
             placeholder="Add an ingredient…"
             aria-label="Add an ingredient"
-            className="w-full pl-10 pr-4 py-3 bg-card border border-border rounded-xl text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-shadow"
+            className="w-full pl-10 pr-4 py-3 bg-card border border-border rounded-xl text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-lemon/70 transition-shadow"
           />
         </div>
         <button
           onClick={handleAdd}
           aria-label="Add ingredient"
           disabled={!value.trim()}
-          className="flex items-center justify-center w-12 h-12 rounded-xl bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity focus-visible:outline-2 focus-visible:outline-ring"
+          className="flex items-center justify-center w-12 h-12 rounded-xl bg-lemon text-lemon-foreground hover:opacity-90 disabled:opacity-35 disabled:cursor-not-allowed transition-opacity focus-visible:outline-2 focus-visible:outline-lemon-foreground"
         >
           <Plus size={20} />
         </button>
       </div>
 
-      {/* Selected ingredients */}
+      {/* Primary action — Find Recipes button + toggle — injected by the parent */}
+      {actionSlot}
+
+      {/* Selected ingredient chips */}
       {ingredients.length > 0 && (
         <div className="flex flex-wrap gap-2 items-center">
           {ingredients.map((ing) => (
@@ -84,7 +100,7 @@ export default function IngredientInput({
         </div>
       )}
 
-      {/* Popular suggestions */}
+      {/* Popular ingredient suggestions */}
       {suggestions.length > 0 && (
         <div className="flex flex-col gap-2">
           <span className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
@@ -95,9 +111,9 @@ export default function IngredientInput({
               <button
                 key={s}
                 onClick={() => onAdd(s)}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border border-border bg-card text-sm text-muted-foreground hover:text-foreground hover:border-primary/40 hover:bg-secondary transition-colors focus-visible:outline-2 focus-visible:outline-ring"
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border border-border bg-card text-sm text-muted-foreground hover:bg-lemon/15 hover:border-lemon/50 hover:text-lemon-foreground transition-colors focus-visible:outline-2 focus-visible:outline-ring"
               >
-                <Plus size={12} />
+                <Plus size={12} aria-hidden="true" />
                 {s}
               </button>
             ))}

@@ -1,7 +1,7 @@
-import type { Recipe } from "../types/recipe";
+import type { CuratedRecipe } from "../types/recipe";
 import { totalMinutes } from "./time";
 
-export function filterByCategory(recipes: Recipe[], category: string): Recipe[] {
+export function filterByCategory(recipes: CuratedRecipe[], category: string): CuratedRecipe[] {
   if (!category || category === "All") return recipes;
   if (category === "Quick") {
     return recipes.filter((r) => totalMinutes(r.prepMinutes, r.cookMinutes) <= 30);
@@ -11,7 +11,7 @@ export function filterByCategory(recipes: Recipe[], category: string): Recipe[] 
   );
 }
 
-export function searchRecipes(recipes: Recipe[], query: string): Recipe[] {
+export function searchRecipes(recipes: CuratedRecipe[], query: string): CuratedRecipe[] {
   if (!query.trim()) return recipes;
   const q = query.toLowerCase().trim();
   return recipes.filter(
@@ -23,9 +23,9 @@ export function searchRecipes(recipes: Recipe[], query: string): Recipe[] {
 }
 
 export function filterAndSearch(
-  recipes: Recipe[],
+  recipes: CuratedRecipe[],
   category: string,
   query: string
-): Recipe[] {
+): CuratedRecipe[] {
   return searchRecipes(filterByCategory(recipes, category), query);
 }

@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Search, ChefHat, CalendarDays, Wallet, Leaf, Sparkles } from "lucide-react";
-import { recipes } from "../data/recipes";
+import { curatedRecipes } from "../data/curatedRecipes";
 import RecipeCard from "../components/recipes/RecipeCard";
 
 const CATEGORY_ICONS: Record<string, string> = {
@@ -43,7 +43,7 @@ const BENEFITS = [
 ];
 
 export default function HomePage() {
-  const featured = recipes.filter((r) => r.featured).slice(0, 3);
+  const featured = curatedRecipes.filter((r) => r.featured).slice(0, 3);
 
   return (
     <div>
@@ -60,9 +60,8 @@ export default function HomePage() {
               Simple Mediterranean Meal Prep
             </h1>
             <p className="text-muted-foreground text-base leading-relaxed max-w-md">
-              Easy wraps, one-pot meals and healthy recipes designed to last
-              several days. Answer one question — what should I meal prep this
-              week?
+              Looking for wraps, one-pot meals, or something Mediterranean that
+              lasts a few days? Start here.
             </p>
             <div className="flex flex-wrap gap-3">
               <Link
@@ -113,7 +112,7 @@ export default function HomePage() {
             to="/recipes"
             className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1 transition-colors"
           >
-            All recipes <ArrowRight size={14} />
+            All curated recipes <ArrowRight size={14} />
           </Link>
         </div>
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
@@ -138,7 +137,7 @@ export default function HomePage() {
       <section className="container-page pb-16">
         <div className="flex items-end justify-between mb-6">
           <div>
-            <h2 className="text-xl font-bold text-foreground">Featured this week</h2>
+            <h2 className="text-xl font-bold text-foreground">Featured recipes</h2>
             <p className="text-sm text-muted-foreground mt-1">Hand-picked meals worth prepping.</p>
           </div>
           <Link
@@ -162,7 +161,7 @@ export default function HomePage() {
       <section className="container-page pb-16">
         <div className="bg-primary rounded-3xl p-8 md:p-10">
           <h2 className="text-xl font-bold text-primary-foreground mb-8">
-            Why meal prep the Mediterranean way
+            Mediterranean meal prep benefits
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
             {BENEFITS.map((b) => (
@@ -184,8 +183,7 @@ export default function HomePage() {
           <span className="text-4xl">🍋</span>
           <h2 className="text-2xl font-bold text-foreground">Got a fridge full of odds and ends?</h2>
           <p className="text-muted-foreground text-sm max-w-sm leading-relaxed">
-            Tell us what you have and we'll show the recipes you can make right
-            now — ranked by how close you are.
+            Search with ingredients in your fridge to find suggested few recipes to try.
           </p>
           <Link
             to="/what-can-i-make"

@@ -7,6 +7,7 @@ import RecipesPage from "./pages/RecipesPage";
 import RecipeDetailPage from "./pages/RecipeDetailPage";
 import IngredientSearchPage from "./pages/IngredientSearchPage";
 import MealPrepPage from "./pages/MealPrepPage";
+import ExternalRecipeDetailPage from "./pages/ExternalRecipeDetailPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
 export default function App() {
@@ -22,6 +23,10 @@ export default function App() {
             <Route path="/recipes/:slug" element={<RecipeDetailPage />} />
             <Route path="/what-can-i-make" element={<IngredientSearchPage />} />
             <Route path="/meal-prep" element={<MealPrepPage />} />
+            <Route
+              path="/external-recipes/themealdb/:id"
+              element={<ExternalRecipeDetailPage />}
+            />
             <Route path="/not-found" element={<NotFoundPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>

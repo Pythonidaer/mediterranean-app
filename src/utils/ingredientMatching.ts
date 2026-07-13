@@ -1,54 +1,12 @@
-import type { Recipe, IngredientMatchResult } from "../types/recipe";
+import type { CuratedRecipe, CuratedIngredientMatchResult } from "../types/recipe";
+import { normalizeIngredient } from "./ingredientNormalization";
 
-const ALIASES: Record<string, string> = {
-  "garbanzo beans": "chickpeas",
-  "garbanzo": "chickpeas",
-  "chickpea": "chickpeas",
-  "bell peppers": "bell pepper",
-  "green pepper": "bell pepper",
-  "red pepper": "bell pepper",
-  "tomatoes": "tomato",
-  "cherry tomatoes": "tomato",
-  "crushed tomatoes": "tomato",
-  "sun-dried tomatoes": "tomato",
-  "eggplant": "eggplant",
-  "aubergine": "eggplant",
-  "courgette": "courgette",
-  "zucchini": "courgette",
-  "coriander": "coriander",
-  "cilantro": "coriander",
-  "greek yoghurt": "greek yogurt",
-  "natural yogurt": "greek yogurt",
-  "yogurt": "greek yogurt",
-  "kalamata olives": "olives",
-  "black olives": "olives",
-  "green olives": "olives",
-  "olive": "olives",
-  "lemon juice": "lemon",
-  "lemons": "lemon",
-  "chicken breast": "chicken",
-  "chicken thighs": "chicken",
-  "chicken thigh": "chicken",
-  "ground turkey": "turkey",
-  "minced turkey": "turkey",
-  "puy lentils": "lentils",
-  "red lentils": "lentils",
-  "green lentils": "lentils",
-  "cannellini beans": "cannellini beans",
-  "white beans": "cannellini beans",
-  "baby spinach": "spinach",
-  "fresh spinach": "spinach",
-};
-
-export function normalizeIngredient(name: string): string {
-  const lower = name.toLowerCase().trim();
-  return ALIASES[lower] ?? lower;
-}
+export { normalizeIngredient } from "./ingredientNormalization";
 
 export function matchRecipes(
-  recipes: Recipe[],
+  recipes: CuratedRecipe[],
   userIngredients: string[]
-): IngredientMatchResult[] {
+): CuratedIngredientMatchResult[] {
   if (userIngredients.length === 0) return [];
 
   const normalizedUser = userIngredients.map(normalizeIngredient);

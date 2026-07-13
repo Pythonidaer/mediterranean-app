@@ -1,9 +1,9 @@
 import { Link } from "react-router-dom";
 import { Check, X } from "lucide-react";
-import type { IngredientMatchResult } from "../../types/recipe";
+import type { CuratedIngredientMatchResult } from "../../types/recipe";
 
 interface IngredientMatchCardProps {
-  result: IngredientMatchResult;
+  result: CuratedIngredientMatchResult;
 }
 
 function MatchRing({ pct }: { pct: number }) {

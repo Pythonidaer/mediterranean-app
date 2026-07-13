@@ -1,138 +1,169 @@
-# Fresco — Mediterranean Meal Prep
+# GreenBean — Mediterranean Meal Prep
 
-Calm, healthy Mediterranean meal prep. Plan once, eat well all week.
+GreenBean is a simple recipe website built for a friend who wanted easy, Mediterranean-inspired meals that can be prepped once and eaten throughout the week. The focus is on flavourful wraps you can grab from the fridge and hearty one-pot slow-cooker meals that stay fresh for several days — nothing complicated, just honest food that makes the week easier.
 
-## About
-
-Fresco is a responsive meal-prep recipe website focused on simple Mediterranean meals that are easy to prepare in batches and eat over several days. The design is based on a Lovable mockup and uses a warm cream, olive-green, and sage colour palette.
+**Live site:** [pythonidaer.github.io/mediterranean-app](https://pythonidaer.github.io/mediterranean-app)
 
 ---
 
-## Phase 1 Scope (current)
+## Tech stack
 
-- Homepage with hero, category shortcuts, featured recipes, and benefits section
-- Recipe directory with category filters and text search
-- Individual recipe detail pages with ingredients, instructions, meal-prep notes, and storage info
-- "What Can I Make?" ingredient-matching page — ranked by how many required ingredients you already have
-- Favorites stored in browser local storage
-- Responsive layouts for mobile, tablet, and desktop
-- No backend, no API keys, no authentication — runs entirely offline after assets load
+- **Vite** + **React 19** + **TypeScript**
+- **React Router** (HashRouter for GitHub Pages compatibility)
+- **Tailwind CSS v4** with a custom olive/sage/cream design system
+- **lucide-react** for icons
+- **Vitest** for unit tests
 
 ---
 
-## Planned Phase 2 Scope
+## Phase 2: TheMealDB integration
 
-- Connect to an external recipe API (e.g. Spoonacular, Edamam, or custom backend)
-- Search and fetch recipes by multiple ingredients via API
-- Map API responses into the internal `Recipe` type
-- Add loading, empty, and error states for async data
-- Separate curated local recipes from external API results
-- Optional user accounts with cloud-synced saved meal plans
-- Optional AI-assisted substitutions or meal-prep instructions
+Phase 2 adds [TheMealDB](https://www.themealdb.com) as a secondary recipe source alongside the ten curated local recipes.
 
-The Phase 1 architecture cleanly separates data, components, and logic so Phase 2 can be added without rewriting the UI. See `src/services/recipeApi.ts` for the stub.
+### What was added
 
----
+- **Name search on the Recipes page** — type a query and click "Search TheMealDB" to see results from the external API displayed below local recipes.
+- **Ingredient-based external search on the "What Can I Make?" page** — after adding ingredients, click "Search TheMealDB" to find ranked external recipe matches in a second section below the curated results.
+- **External recipe detail page** at `/external-recipes/themealdb/:id` — shows image, ingredients with measurements, instructions, YouTube link, source attribution, and a YouTube search fallback.
+- Curated local recipes are **unaffected** — they remain fully functional even if the API is unavailable.
 
-## Technology Stack
+### Environment variable
 
-| Tool | Purpose |
-|---|---|
-| Vite | Build tool and dev server |
-| React 19 | UI framework |
-| TypeScript | Type safety |
-| React Router v6 | Client-side routing |
-| Tailwind CSS v4 | Styling with design tokens |
-| lucide-react | Icons |
-| Local Storage | Favorites persistence |
+| Variable | Description | Default |
+|---|---|---|
+| `VITE_MEALDB_API_KEY` | TheMealDB API key | `1` (free developer key) |
 
----
-
-## Installation
+Copy `.env.example` to `.env` to configure:
 
 ```bash
+cp .env.example .env
+```
+
+The free key `1` is public and works during development. Do not commit a production key.
+
+### Architecture
+
+```
+src/
+├── services/
+│   ├── recipeApi.ts              # public re-export + architecture docs
+│   └── mealDb/
+│       ├── mealDbClient.ts       # fetch helpers, session cache, abort support
+│       ├── mealDbMappers.ts      # raw API response → ExternalRecipe
+│       └── mealDbTypes.ts        # TheMealDB TypeScript response shapes
+├── hooks/
+│   ├── useMealSearch.ts              # name search hook (abort + retry)
+│   └── useIngredientRecipeSearch.ts  # ingredient search hook (abort + retry)
+├── types/
+│   ├── recipe.ts                 # curated Recipe type (unchanged)
+│   └── externalRecipe.ts         # ExternalRecipe, ExternalRecipeMatch
+└── utils/
+    ├── ingredientNormalization.ts # normalizeIngredient, INGREDIENT_ALIASES
+    ├── ingredientMatching.ts      # local recipe matching (imports from normalization)
+    └── youtube.ts                 # createYouTubeSearchUrl
+```
+
+All UI components consume the internal `ExternalRecipe` type only. No component imports directly from `mealDbClient`.
+
+### Curated vs external recipes
+
+| Feature | Curated recipes | TheMealDB recipes |
+|---|---|---|
+| Prep / cook time | ✓ | — |
+| Storage info | ✓ | — |
+| Reheating notes | ✓ | — |
+| Meal-prep notes | ✓ | — |
+| Substitutions | ✓ | — |
+| Image | local URLs | `strMealThumb` |
+| YouTube | — | direct URL + search fallback |
+| Source link | — | `strSource` when available |
+| Attribution | prototype disclaimer | "Recipe data provided by TheMealDB" |
+
+### Multi-ingredient search strategy
+
+The free TheMealDB V1 API supports only **one ingredient per filter request**. GreenBean works around this by:
+
+1. Normalizing and deduplicating submitted ingredients (max 5 sent to the API).
+2. Sending one `filter.php?i=` request per ingredient in parallel.
+3. Combining the returned meal summaries — tracking which ingredients each meal matched.
+4. Ranking by match count and selecting the top 12 candidates.
+5. Fetching full details for those candidates via `lookup.php?i=`.
+6. Recalculating a precise match percentage from the complete ingredient list.
+
+This is an **approximation**. Because results are combined from separate single-ingredient queries, a meal that matches multiple ingredients is ranked higher, but the percentage shown is calculated against the full recipe.
+
+### Request limits and caching
+
+- Maximum **5** submitted ingredients sent to the external API per search.
+- Maximum **12** full recipe detail lookups per search.
+- All responses are cached in an **in-memory `Map`** for the current browser session (not persisted to localStorage).
+- Cache keys: `mealdb:name:{query}`, `mealdb:ingredient:{ingredient}`, `mealdb:meal:{id}`.
+- Previous requests are aborted when a new search begins.
+- No requests are made on every keystroke — external search requires an explicit button click.
+
+### YouTube behaviour
+
+- When `strYoutube` is present, a "Watch recipe video" link is shown.
+- A "Search YouTube" fallback is always shown, generated via `createYouTubeSearchUrl(title)`.
+- YouTube links open in a new tab with `rel="noopener noreferrer"`.
+- The YouTube Data API is not used; no video is auto-embedded.
+
+### Image behaviour
+
+- External recipe images use `strMealThumb` from TheMealDB.
+- Images include an `onError` handler; broken images are hidden rather than showing a broken icon.
+- Image aspect ratios are preserved with Tailwind's `aspect-*` utilities to avoid layout shift.
+
+### Attribution
+
+All external results are labelled "TheMealDB" in the UI. The detail page states:
+
+> Recipe data provided by TheMealDB. This recipe was not authored or tested by GreenBean.
+
+When a source URL is available, a "View original source" link is shown.
+
+### Replacing TheMealDB
+
+To swap in another recipe provider:
+
+1. Create `src/services/<provider>/` with `<provider>Client.ts`, `<provider>Mappers.ts`, `<provider>Types.ts`.
+2. Return `ExternalRecipe[]` and `ExternalRecipeMatch[]` from the new client.
+3. Update the imports in `useMealSearch` and `useIngredientRecipeSearch`.
+4. No page or component changes are required.
+
+### Known limitations
+
+- The free endpoint supports only **one ingredient per request**; combining results is an approximation.
+- API categories differ from GreenBean's curated categories (Wraps, One Pot, etc.).
+- External recipes do not include meal-prep metadata, storage info, or nutrition data.
+- Some recipes may have no source URL or YouTube link.
+- Recipe image quality varies by contributor.
+- Ingredient names may require normalization to match correctly.
+- The free API is not intended for high-volume production use.
+
+---
+
+## Local development
+
+```bash
+# Install dependencies
 npm install
-```
 
-## Development
+# Copy env example and set your API key
+cp .env.example .env
 
-```bash
+# Start dev server
 npm run dev
-```
 
-## Build
+# Run tests
+npm test
 
-```bash
+# Build for production
 npm run build
 ```
 
 ---
 
-## Project Structure
+## Deployment
 
-```
-src/
-├── components/
-│   ├── layout/       # Header, Footer, PageContainer
-│   ├── recipes/      # RecipeCard, RecipeGrid, RecipeFilters, FavoriteButton
-│   └── ingredients/  # IngredientInput, IngredientTag, IngredientMatchCard
-├── data/
-│   └── recipes.ts    # 10 sample Mediterranean meal-prep recipes
-├── hooks/
-│   └── useFavorites.ts  # Local storage hook for favorited recipes
-├── pages/            # One file per route
-├── services/
-│   └── recipeApi.ts  # Phase 2 stub — no network requests in Phase 1
-├── types/
-│   └── recipe.ts     # Recipe and RecipeIngredient types
-└── utils/
-    ├── ingredientMatching.ts  # Match percentage + alias normalisation
-    ├── recipeFilters.ts       # Category + text search filters
-    └── time.ts               # Time formatting helpers
-```
-
----
-
-## Local Recipe Data
-
-All recipes live in `src/data/recipes.ts`. Each recipe follows the `Recipe` type defined in `src/types/recipe.ts`. The file exports:
-
-- `recipes` — array of 10 sample Mediterranean meal-prep recipes
-- `CATEGORIES` — canonical category list
-- `POPULAR_INGREDIENTS` — quick-add suggestions for the ingredient search page
-
-Recipe content is realistic sample data for prototype purposes and has not been professionally tested.
-
----
-
-## Favorites
-
-Favorites are stored in `localStorage` under the key `fresco_favorites` as a JSON array of recipe IDs. They persist across page refreshes and browser sessions. The `useFavorites` hook handles all reads and writes.
-
----
-
-## Design Reference
-
-The UI was designed to match a Lovable mockup provided as screenshots. The design uses:
-
-- **Palette**: warm cream background (`oklch(0.985 0.008 95)`), olive-green primary, sage accents, tomato and lemon food accents
-- **Font**: Manrope (loaded from Google Fonts)
-- **Radius**: 1rem base, scaling up to 2.5rem for large cards
-- **Shadows**: soft layered shadows defined as CSS custom properties
-
----
-
-## Future API Integration Notes
-
-To add Phase 2 API support:
-
-1. Implement `src/services/recipeApi.ts` — add functions that fetch from the external API and return `Recipe[]`
-2. Create a data layer hook (e.g. `useRecipes`) that merges local and remote recipes
-3. Pass remote results to the existing `RecipeGrid` and filter utilities — no UI rewrite needed
-4. Add loading and error states at the page level
-
-The `Recipe` type is intentionally decoupled from any specific API provider's response format.
-
----
-
-*© 2026 Fresco. Sample recipes for prototype purposes.*
+The site is deployed to GitHub Pages via GitHub Actions (`.github/workflows/deploy.yml`). Every push to `main` triggers a build and deploy.

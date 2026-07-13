@@ -1,18 +1,18 @@
-export type RecipeIngredient = {
+export type CuratedRecipeIngredient = {
   name: string;
   normalizedName: string;
   amount: string;
   optional?: boolean;
 };
 
-export type Recipe = {
+export type CuratedRecipe = {
   id: string;
   slug: string;
   title: string;
   description: string;
   imageUrl: string;
   categories: string[];
-  ingredients: RecipeIngredient[];
+  ingredients: CuratedRecipeIngredient[];
   instructions: string[];
   servings: number;
   prepMinutes: number;
@@ -25,7 +25,7 @@ export type Recipe = {
   featured?: boolean;
 };
 
-export type RecipeCategory =
+export type CuratedRecipeCategory =
   | "Wraps"
   | "One Pot"
   | "Slow Cooker"
@@ -33,8 +33,8 @@ export type RecipeCategory =
   | "High Protein"
   | "Quick";
 
-export type IngredientMatchResult = {
-  recipe: Recipe;
+export type CuratedIngredientMatchResult = {
+  recipe: CuratedRecipe;
   matchPercentage: number;
   matchedIngredients: string[];
   missingIngredients: string[];

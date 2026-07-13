@@ -1,6 +1,6 @@
-import type { Recipe } from "../types/recipe";
+import type { CuratedRecipe } from "../types/recipe";
 
-export const recipes: Recipe[] = [
+export const curatedRecipes: CuratedRecipe[] = [
   {
     id: "1",
     slug: "chicken-hummus-wraps",
@@ -104,7 +104,7 @@ export const recipes: Recipe[] = [
     description:
       "Hearty chickpeas with feta, roasted peppers, and tzatziki sauce wrapped in a warm flatbread. A satisfying vegetarian meal that keeps well in the fridge.",
     imageUrl:
-      "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=800&q=80",
+      "https://images.unsplash.com/photo-1683725519288-eab9fa352335?w=800&q=80",
     categories: ["Wraps", "Vegetarian"],
     featured: true,
     servings: 4,
@@ -278,7 +278,7 @@ export const recipes: Recipe[] = [
     description:
       "Warm-spiced chicken thighs slow-cooked until tender, served over fluffy rice with roasted vegetables, tahini drizzle, and pickled onions. Minimal effort, maximum flavour.",
     imageUrl:
-      "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&q=80",
+      "https://images.unsplash.com/photo-1744444202869-54debf97b285?w=800&q=80",
     categories: ["Slow Cooker", "High Protein"],
     featured: true,
     servings: 4,
@@ -377,7 +377,7 @@ export const recipes: Recipe[] = [
     description:
       "One-pot lemon herb chicken baked with fragrant rice, olives, and sun-dried tomatoes. Everything cooks in one dish, making it ideal for weekly meal prep.",
     imageUrl:
-      "https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?w=800&q=80",
+      "https://images.unsplash.com/photo-1684556560149-c6ac1c9cecd9?w=800&q=80",
     categories: ["One Pot", "High Protein"],
     servings: 4,
     prepMinutes: 10,
@@ -467,7 +467,7 @@ export const recipes: Recipe[] = [
     description:
       "A rich, warming stew of red lentils, crushed tomatoes, and Mediterranean spices. Ready in under 40 minutes and even better the next day.",
     imageUrl:
-      "https://images.unsplash.com/photo-1547592180-85f173990554?w=800&q=80",
+      "https://images.unsplash.com/photo-1581347860118-588a42326161?w=800&q=80",
     categories: ["One Pot", "Vegetarian"],
     featured: true,
     servings: 4,
@@ -556,7 +556,7 @@ export const recipes: Recipe[] = [
     description:
       "A comforting, protein-rich soup with creamy white beans, wilted spinach, and a flavoursome tomato broth. Ready in 30 minutes and deeply satisfying.",
     imageUrl:
-      "https://images.unsplash.com/photo-1476718406336-bb5a9690ee2a?w=800&q=80",
+      "https://images.unsplash.com/photo-1779119867390-c64f66cd02b8?w=800&q=80",
     categories: ["One Pot", "Vegetarian"],
     servings: 4,
     prepMinutes: 10,
@@ -645,7 +645,7 @@ export const recipes: Recipe[] = [
     description:
       "Creamy orzo simmered with lemon, garlic, spinach, and feta in a single pot. Light, bright, and endlessly comforting — ready in 25 minutes.",
     imageUrl:
-      "https://images.unsplash.com/photo-1555949258-eb67b1ef0ceb?w=800&q=80",
+      "https://images.unsplash.com/photo-1683615062749-46872b5acb69?w=800&q=80",
     categories: ["One Pot", "Vegetarian"],
     featured: true,
     servings: 4,
@@ -808,7 +808,7 @@ export const recipes: Recipe[] = [
     description:
       "Herby lentils tossed with roasted aubergine, peppers, and olives — hearty, fully plant-based, and packed with flavour. Excellent warm or cold.",
     imageUrl:
-      "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=800&q=80",
+      "https://images.unsplash.com/photo-1470338950318-40320a722782?w=800&q=80",
     categories: ["Vegetarian", "One Pot"],
     featured: true,
     servings: 4,
