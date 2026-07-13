@@ -5,6 +5,7 @@ import { Menu, X, Leaf } from "lucide-react";
 const NAV_LINKS = [
   { to: "/recipes", label: "Curated Recipes" },
   { to: "/what-can-i-make", label: "What Can I Make?" },
+  { to: "/ingredient-guide", label: "Ingredient Guide" },
 ];
 
 export default function Header() {
